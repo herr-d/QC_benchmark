@@ -32,3 +32,5 @@ from ._replacer import (AutoReplacer,
 from ._tagremover import TagRemover
 from ._testengine import CompareEngine, DummyEngine
 from ._twodmapper import GridMapper
+
+#from ._permutation import PermuteBase, PermuteFront
