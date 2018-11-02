@@ -136,6 +136,10 @@ class DoubleLinkedList(object):
 
         if(elem1.next == elem1):
             elem2.prev, elem1.next = elem1.next, elem2.prev
+        if(elem1.prev == elem1):
+            elem2.next, elem1.prev = elem1.prev, elem2.next
+
+
 
         # adjust the elements before and after:
         if(elem1.prev != None):

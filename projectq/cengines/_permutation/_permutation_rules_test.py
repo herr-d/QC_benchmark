@@ -1,63 +1,50 @@
 from _linkedlist import DoubleLinkedList
 from _permutation_rules import BasePermutationRules
+import projectq
+import cmath
 import pytest
 
 
 
-def test_LinkedList():
-	ll = DoubleLinkedList()
-	assert(ll.count() == 0 and "count function returns wrong count for empty list")
-	ll.push_back(3)	
-	ll.push_front(1)	
-	elem3 = ll.back
-	ll.insert_before(elem3,2)
+@pytest.fixture
+def linkedlist():
+	return DoubleLinkedList()
 
-	count = 0
-	current_ll = [1,2,3]
-	for e in ll:
-		assert(e.data == current_ll[count])
-		count += 1
-
-	assert(count == 3)
-
-	count = 0
-	current_ll = [3,2,1]
-	for e in reversed(ll):
-		assert(e.data == current_ll[count])
-		count += 1
-
-	ll.insert_after(ll.back,4)
-	ll.insert_after(elem3,3.5)
-	ll.insert_before(ll.head,0)
-
-	assert(ll.remove_element(elem3.next) == 3.5)
+@pytest.fixture
+def eng():
+	return projectq.MainEngine()
 
 
-	assert(ll.count() == 5)
-
-	ll.swap_elements(ll.head.next,ll.head)
-	ll.swap_elements(ll.back.prev.prev, ll.back)
-
-	print("--")
-	count = 0
-	current_ll = [1,0,4,3,2]
-	for e in ll:
-		assert(e.data == current_ll[count])
-		count += 1
-
-	print("reversed")
-	count=0
-	for e in reversed(ll):
-		assert(e.data == current_ll[4-count])
-		count += 1
-
-	ll.swap_elements(ll.head,ll.head.next)
-
-	assert(ll.pop_front() == 0)
-	assert(ll.pop_back() == 2)
-	return
 
 
-def Test_two():
+
+#
+# Tests for complete permutations are below
+# these will check for errors in the commutation relations
+#
+
+def test_single_qubit_permutation_rules(linkedlist, eng):
+    rules = BasePermutationRules(linkedlist)
+    qureg = eng.allocate_qureg(3)
+
+    H = projectq.ops.H
+    Rx = projectq.ops.Rx(cmath.pi)
     
+    linkedlist.push_back(H.generate_command(qureg[0]))
+    linkedlist.push_back(Rx.generate_command(qureg[0]))
+
+    assert(linkedlist.head.data.gate == H)
+    assert(isinstance(linkedlist.back.data.gate, projectq.ops.Rx))
+
+    rules.permute(linkedlist.head,linkedlist.back)
+
+    for elem in linkedlist:
+    	print(elem.data)
+
+    assert(isinstance(linkedlist.head.data.gate, projectq.ops.Rz))
+    assert(linkedlist.back.data.gate == H)
     return
+
+
+def test_multiqubit_permutation_rules(linkedlist, eng):
+	return
