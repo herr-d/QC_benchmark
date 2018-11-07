@@ -1,6 +1,5 @@
 import projectq.ops as gates
 import cmath
-from _linkedlist import DoubleLinkedList
 from _permutation_relations import PermutationRuleDoesNotExist
 from _permutation_relations import _GATE_TO_INFO, _GATE_FROM_INFO, _COMM_REL
 
@@ -31,7 +30,6 @@ class BasePermutationRules(object):
 	Attributes:
         self.linked_list (DoubleLinkedList): All gates of the circuit are stored
         	in this linked list. This allows fast modification and permutations.
-
 	"""
 
 	def __init__(self, linked_list):
@@ -117,8 +115,8 @@ class BasePermutationRules(object):
 		Permutation rule between control gate and rotation
 
 		Args:
-            left (BasicGate): left gate of the commutation
-            right (BasicGate): right gate of the commutation
+            left (Command): Command for the left gate of the commutation
+            right (Command): Command for the right gate of the commutation
             left_info (list): information on the left gate (from get_basis function)
             right_info (list): information on the right gate (from get_basis function)
 
@@ -126,7 +124,23 @@ class BasePermutationRules(object):
             Exception if no permutation rule is available.
 		"""
 
-		# TODO
+		# control qubits can be used on any gate which makes the implmentation
+		# a bit different from single or multi qubit gates in the permutation
+		# relations folder
+
+		#
+		if left.control_qubits[0] in right.qubits:
+			permute_control_rotation(left, left_info, right, right_info)
+		elif right.control_qubits[0] in left.qubits:
+			permute_control_rotation(right, right_info, left, left_info)
+
+		# target
+		if(len(left.control_qubits) == 1):
+			permute_target_rotation(left, left_info, right, right_info)
+		
+		elif(len(right.control_qubits) == 1):
+			permute_target_rotation(right, right_info, left, left_info)
+		
 		return
 
 
@@ -163,7 +177,8 @@ class BasePermutationRules(object):
 			if(gate[0][0][1] in _GATE_FROM_INFO):
 				return _GATE_FROM_INFO[gate[0][0][1]](gate[2])
 		else: # multiqubit gate
-			# use the updated basis information
-			return gates.TimeEvolution(gate[2], gates.QubitOperator(gate[0]))
+			# TimeEvolution operators have a different prefactor
+			# from rotations thus the division by -2
+			return gates.TimeEvolution(-gate[2]/2., gates.QubitOperator(gate[0]))
 		raise PermutationRuleDoesNotExist("""Cannot create rotation gate from the
 			provided information.""")

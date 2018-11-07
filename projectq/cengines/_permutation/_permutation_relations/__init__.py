@@ -1,6 +1,7 @@
 from . import _rotation_hadamard
 from . import _rotations
 from . import _permutation_error
+from . import _controlled_gate
 
 PermutationRuleDoesNotExist = _permutation_error.PermutationRuleDoesNotExist
 #
@@ -25,3 +26,6 @@ _GATE_FROM_INFO = {**_rotation_hadamard._HADAMARD_GATE_FROM_INFO,
 #
 _COMM_REL = {**_rotation_hadamard._HADAMARD_ROTATION_COMM_REL,
 			**_rotations._ROT_COMM_REL}
+
+
+# controlled gates need to be handled differently (unfortunately)

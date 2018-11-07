@@ -2,8 +2,9 @@
 # Implementation of the commutation relation between a Hadamard gate and
 # rotational gates.
 #
-
+import cmath
 import projectq.ops as gates
+from . import _helper_functions
 
 def comm_rel_Hadamard_Rot(rot_info):
 	"""
@@ -15,7 +16,7 @@ def comm_rel_Hadamard_Rot(rot_info):
 	elif(rot_info[0][0][1] == "Z"):
 		rot_info[0][0] = (rot_info[0][0][0],"X")
 	else: # for Y rotations the angle gets flipped
-		rot_info[2] = 2*cmath.pi - rot_info[2]
+		rot_info[2] = 4*cmath.pi - rot_info[2]
 	return
 
 
@@ -34,5 +35,6 @@ _HADAMARD_ROTATION_COMM_REL = {
 	("pi4","H"): lambda left, right: comm_rel_Hadamard_Rot(left),
 	("H","pi4"): lambda left, right: comm_rel_Hadamard_Rot(right),
 	("pi","H"): lambda left, right: comm_rel_Hadamard_Rot(left),
-	("H","pi"): lambda left, right:	comm_rel_Hadamard_Rot(right)
+	("H","pi"): lambda left, right:	comm_rel_Hadamard_Rot(right),
+	("H", "H"): lambda left, right:	_helper_functions.do_nothing()
 }

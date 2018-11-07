@@ -1,5 +1,5 @@
 from _linkedlist import DoubleLinkedList
-from _permutation_rules import BasePermutationRules
+from ._permutation_rules import BasePermutationRules
 import projectq
 import cmath
 import pytest
@@ -79,9 +79,29 @@ def test_Rzpi2_Rxpi(linkedlist, eng):
     assert(isinstance(linkedlist.head.data.gate, projectq.ops.Rx))
     assert(isinstance(linkedlist.back.data.gate, projectq.ops.Rz))
 
-    assert(abs(linkedlist.back.data.gate.angle - (2*cmath.pi - cmath.pi/2)) < _PRECISION)
+    assert(abs(linkedlist.back.data.gate.angle - (4*cmath.pi - cmath.pi/2)) < _PRECISION)
     return
 
+def test_Rzpi2_Rxpi2(linkedlist, eng):
+    #
+    # --Rz(pi/2)--Rx(pi/2)--  = --Ry(-pi/2)--Rz(pi/2)--
+    #
+    rules = BasePermutationRules(linkedlist)
+    qureg = eng.allocate_qureg(3)
+
+    Rz = projectq.ops.Rz(cmath.pi/2)
+    Rx = projectq.ops.Rx(cmath.pi/2)
+    
+    linkedlist.push_back(Rz.generate_command(qureg[0]))
+    linkedlist.push_back(Rx.generate_command(qureg[0]))
+
+    rules.permute(linkedlist.head,linkedlist.back)
+
+    assert(isinstance(linkedlist.head.data.gate, projectq.ops.Ry))
+    assert(isinstance(linkedlist.back.data.gate, projectq.ops.Rz))
+
+    assert(abs(linkedlist.head.data.gate.angle - (4*cmath.pi - cmath.pi/2)) < _PRECISION)
+    return
 
 def test_Rxpi4_Rzpi2(linkedlist, eng):
     rules = BasePermutationRules(linkedlist)
@@ -101,7 +121,7 @@ def test_Rxpi4_Rzpi2(linkedlist, eng):
     assert(isinstance(linkedlist.head.data.gate, projectq.ops.Ry))
     assert(isinstance(linkedlist.back.data.gate, projectq.ops.Rx))
 
-    assert(abs(linkedlist.head.data.gate.angle - (2*cmath.pi - cmath.pi/4)) < _PRECISION)
+    assert(abs(linkedlist.head.data.gate.angle - cmath.pi/4) < _PRECISION)
     return
 
 
@@ -127,7 +147,6 @@ def test_Rzpi2_Rxpi4(linkedlist, eng):
     return
 
 
-
-
 def test_multiqubit_permutation_rules(linkedlist, eng):
+    
 	return
