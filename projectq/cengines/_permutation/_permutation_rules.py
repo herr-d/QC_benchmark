@@ -1,7 +1,7 @@
 import projectq.ops as gates
 import cmath
-from _permutation_relations import PermutationRuleDoesNotExist
-from _permutation_relations import _GATE_TO_INFO, _GATE_FROM_INFO, _COMM_REL
+from ._permutation_relations import PermutationRuleDoesNotExist
+from ._permutation_relations import _GATE_TO_INFO, _GATE_FROM_INFO, _COMM_REL
 
 #
 # All gates get converted into an easier format using the get basis function.
@@ -52,8 +52,18 @@ class BasePermutationRules(object):
         Raises:
             Exception if no permutation rule is available.
 		"""
-		assert(len(left.data.control_qubits)<=1)
-		assert(len(right.data.control_qubits)<=1)
+		assert(len(left.data.control_qubits)==0)
+		assert(len(right.data.control_qubits)==0)
+
+		# debug
+		#print("permute: left: " + str(left.data.gate) +"  right: " + str(right.data.gate))
+
+
+		if(not type(left.data.gate) in _GATE_TO_INFO or not type(right.data.gate) in _GATE_TO_INFO):
+			raise PermutationRuleDoesNotExist("""This is not a valid gate for the 
+			permutation rules. Allowed gatesets are currently: Pauli-rotations
+			and controlled Pauli-rotations. Any other gate is currently 
+			unsupported. Be sure to use the predefined decomposition rules.""")
 
 		left_info = _GATE_TO_INFO[type(left.data.gate)](left.data.gate)
 		right_info = _GATE_TO_INFO[type(right.data.gate)](right.data.gate)
@@ -74,6 +84,17 @@ class BasePermutationRules(object):
 		return
 
 
+	def check_clifford(self, node):
+		"""
+		Used by permutation class to check if gates should be permuted
+		"""
+		if(type(node.data.gate) in _GATE_TO_INFO):
+			info = _GATE_TO_INFO[type(node.data.gate)](node.data.gate)
+			if(info[1]=="pi4"):
+				return False
+		return True
+
+
 	def _permute_multiqubit(self, left, right, left_info, right_info):
 		"""
 		Permutes two gates. The permutation relation of multi-qubit rotations
@@ -91,7 +112,7 @@ class BasePermutationRules(object):
 		for left_i in range(len(left_info[0])):
 			for right_i in range(len(right_info[0])):
 				# applied on the same qubit?
-				if(left.qubits[left_info[0][left_i][0]] == right.qubits[right_info[0][right_i][0]]):
+				if(left.qubits[0][left_info[0][left_i][0]] == right.qubits[0][right_info[0][right_i][0]]):
 					# generate single qubit gate i.e. basis array of length 1
 					new_left_info = [[left_info[0][left_i]], left_info[1], left_info[2]]
 					new_right_info = [[right_info[0][right_i]], right_info[1], right_info[2]]
@@ -129,9 +150,9 @@ class BasePermutationRules(object):
 		# relations folder
 
 		#
-		if left.control_qubits[0] in right.qubits:
+		if left.control_qubits[0] in right.qubits[0]:
 			permute_control_rotation(left, left_info, right, right_info)
-		elif right.control_qubits[0] in left.qubits:
+		elif right.control_qubits[0] in left.qubits[0]:
 			permute_control_rotation(right, right_info, left, left_info)
 
 		# target
@@ -179,6 +200,6 @@ class BasePermutationRules(object):
 		else: # multiqubit gate
 			# TimeEvolution operators have a different prefactor
 			# from rotations thus the division by -2
-			return gates.TimeEvolution(-gate[2]/2., gates.QubitOperator(gate[0]))
+			return gates.TimeEvolution(-gate[2]/2., gates.QubitOperator(tuple(gate[0])))
 		raise PermutationRuleDoesNotExist("""Cannot create rotation gate from the
 			provided information.""")

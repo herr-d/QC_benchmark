@@ -6,6 +6,9 @@ from . import _helper_functions
 import projectq.ops as gates
 import cmath
 from projectq.ops._qubit_operator import _PAULI_OPERATOR_PRODUCTS
+
+
+
 from . import _permutation_error
 
 #needed for the comparison of angles
@@ -52,18 +55,14 @@ def get_left_angle(left,right):
 	factor, basis = _PAULI_OPERATOR_PRODUCTS[(left[0][0][1],right[0][0][1])]
 	if basis == "I":
 		return left[2]
-	factor *= 1.j
-	if(abs(factor + 1)< _PRECISION):
-		return 4*cmath.pi - left[2]
+	return 4*cmath.pi - left[2]
 
 
 def get_right_angle(left,right):
 	factor, basis = _PAULI_OPERATOR_PRODUCTS[(left[0][0][1],right[0][0][1])]
 	if basis == "I":
 		return right[2]
-	factor *= 1.j
-	if(abs(factor + 1)< _PRECISION):
-		return 4*cmath.pi - right[2]
+	return 4*cmath.pi - right[2]
 
 
 def time_evolution_info(gate):
@@ -82,14 +81,12 @@ def time_evolution_info(gate):
 		#only allow prefactor of 1 (the angle is given by the time)
 		assert(list(gate.hamiltonian.terms.values())[0] == 1)
 		# time in TimeEvolution operator gives rotation angle
-		print("time")
-		print(gate.time)
 		if(abs((-1*gate.time)-cmath.pi/4) < _PRECISION or
 				abs((-1*gate.time)-(cmath.pi*2-cmath.pi/4)) < _PRECISION):
-			return [bases, "pi2", gate.time*2] # time evolution is missing the 1/2 of rotational gates
+			return [bases, "pi2", -gate.time*2] # time evolution is missing the 1/2 of rotational gates
 		elif(abs((-1*gate.time)-cmath.pi/8) < _PRECISION or
 				abs((-1*gate.time)-(cmath.pi*2-cmath.pi/8)) < _PRECISION):
-			return [bases, "pi4", gate.time*2] # time evolution is missing the factor 1/2 of rotational gates
+			return [bases, "pi4", -gate.time*2] # time evolution is missing the factor 1/2 of rotational gates
 	raise _permutation_error.PermutationRuleDoesNotExist("""To be able to use
 		arbitrary rotations (Time evolutions) they first have to be decomposed.
 		Into pi/2 and pi/4 rotations.""")

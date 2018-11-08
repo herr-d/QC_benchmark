@@ -1,4 +1,4 @@
-from _linkedlist import DoubleLinkedList
+from ._linkedlist import DoubleLinkedList
 from ._permutation_rules import BasePermutationRules
 import projectq
 import cmath
@@ -143,10 +143,44 @@ def test_Rzpi2_Rxpi4(linkedlist, eng):
     assert(isinstance(linkedlist.head.data.gate, projectq.ops.Rx))
     assert(isinstance(linkedlist.back.data.gate, projectq.ops.Ry))
 
-    assert(abs(linkedlist.back.data.gate.angle - cmath.pi/4) < _PRECISION)
+    assert(abs(linkedlist.back.data.gate.angle - (4*cmath.pi - cmath.pi/4)) < _PRECISION)
     return
 
 
 def test_multiqubit_permutation_rules(linkedlist, eng):
-    
-	return
+    rules = BasePermutationRules(linkedlist)
+    qureg = eng.allocate_qureg(4)
+    reg1 = qureg[:-1]
+    reg2 = qureg[1:]
+
+
+    H = projectq.ops.QubitOperator
+    T = projectq.ops.TimeEvolution
+
+    left = T(- cmath.pi/4, H("X0 Z1 Z2"))
+    right = T(- cmath.pi/4, H("Z0 Z1 Y2"))
+
+    linkedlist.push_back(left.generate_command(reg1))
+    linkedlist.push_back(right.generate_command(reg2))
+
+    print(linkedlist.head.data)
+    print(linkedlist.back.data)
+
+
+    rules.permute(linkedlist.head,linkedlist.back)
+
+    print(linkedlist.head.data)
+    print(linkedlist.back.data)
+
+    assert(linkedlist.head.data.gate.time == -cmath.pi/4)
+    assert(linkedlist.back.data.gate.time == -cmath.pi/4)
+
+    # TODO: write more checks for multi qubit operators
+    return
+
+def test_control_gates(linkedlist, eng):
+    rules = BasePermutationRules(linkedlist)
+    qureg = eng.allocate_qureg(4)
+
+    # TODO: write tests
+    return

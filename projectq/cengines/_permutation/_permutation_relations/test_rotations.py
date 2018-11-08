@@ -94,14 +94,14 @@ def test_time_evolution_info():
 	assert(gate_info[1] == "pi4" and gate_info[2] == cmath.pi/4)
 
 	# example with -angle
-	gate = gates.TimeEvolution(cmath.pi/4, gates.QubitOperator("X0 X1 Y2"))
+	gate = gates.TimeEvolution(-(2*cmath.pi-cmath.pi/4), gates.QubitOperator("X0 X1 Y2"))
 	gate_info = _rotations.time_evolution_info(gate)
 	assert(gate_info[1] == "pi2" and gate_info[2] == 4*cmath.pi - cmath.pi/2)
 
 
 	# does it throw errors as it is supposed to
 	with pytest.raises(PermutationRuleDoesNotExist) as e:
-	 	gate = gates.TimeEvolution(cmath.pi/16, gates.QubitOperator("X0 X1 Y2"))
+	 	gate = gates.TimeEvolution(-cmath.pi/16, gates.QubitOperator("X0 X1 Y2"))
 	 	gate_info = _rotations.time_evolution_info(gate)
 	return
 

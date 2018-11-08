@@ -1,7 +1,8 @@
 
 from projectq.cengines import BasicEngine
-from projectq.ops import FlushGate, FastForwardingGate, NotMergeable
-from ._linkedlist import DoubleLinkedList
+from projectq.ops import FlushGate, FastForwardingGate, NotMergeable, AllocateQubitGate
+from projectq.cengines._permutation._linkedlist import DoubleLinkedList
+from projectq.cengines._permutation._permutation_rules import BasePermutationRules
 
 class PermuteBase(BasicEngine):
     """
@@ -21,15 +22,16 @@ class PermuteBase(BasicEngine):
                 first gate.
         """
         BasicEngine.__init__(self)
-        self._perm = permutation_rule
         self._dllist = DoubleLinkedList()  # dict of lists containing operations for each qubit
+        self._perm = permutation_rule(self._dllist)
 
 
-    def _send_qubit_pipeline(self, idx, n):
+    def _send_qubit_pipeline(self):
         """
         Send the first gates that are already in the proper location
         """
-
+        for node in self._dllist:
+            self.send([node.data])
         return
 
 
@@ -38,8 +40,9 @@ class PermuteBase(BasicEngine):
         This function needs to be overwritten by the derived class.
         And should perform the Permutation.
         """
-
         return
+
+
 
     def receive(self, command_list):
         """
@@ -48,11 +51,11 @@ class PermuteBase(BasicEngine):
         finished and sends the permuted circuit to the next engine.
         """
         for cmd in command_list:
-            if cmd.gate == FlushGate():  # flush gate --> permute and flush
+            if (isinstance(cmd.gate, FlushGate)):  # flush gate --> permute and flush
                 print("Warning: recieved a flush gate. For the permutation engine to work a flush can only be performed at the very end.")
-                self.perform_permutation()
+                self.permute()
+                self._send_qubit_pipeline()
                 self.send([cmd])
-
             else: # new command
                 # push back command into linked list
                 self._dllist.push_back(cmd)
@@ -60,20 +63,28 @@ class PermuteBase(BasicEngine):
 
 
 
-class PermuteFront(PermuteBase):
+class PermutePi4Front(PermuteBase):
+    def __init__(self):
+        super(PermutePi4Front, self).__init__(BasePermutationRules)
+
+
     def permute(self):
         for node in self._dllist:
-            # iteration along the linked list
-            # once a gate is found it is permuted to the front using
-            if(perm.gate_of_interest(node)):
-                # create a block of this single gate
-                # This is needed because additional gates are created by the
-                # permutation rules and need to be moved to the front
-
-                block = [node]
-                current = block[0].prev
-                while(perm.permutation_required(current, block)):
-                    #TODO
-                    print("Todo")
-
+            if(self._gate_of_interest(node)):
+                while(self._permutation_required(node.prev)):
+                    self._perm.permute(node.prev, node)
         return
+
+
+    def _gate_of_interest(self, node):
+        if(self._perm.check_clifford(node)):
+            return False
+        return True
+
+
+    def _permutation_required(self, left):
+        if (left == None or isinstance(left.data.gate,AllocateQubitGate)):
+            return False
+        if(self._gate_of_interest(left)):
+            return False
+        return True
