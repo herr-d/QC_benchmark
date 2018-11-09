@@ -1,7 +1,7 @@
 from . import _rotation_hadamard
 from . import _rotations
 from . import _permutation_error
-from . import _controlled_gate
+from ._controlled_gate import permute_cnot
 
 PermutationRuleDoesNotExist = _permutation_error.PermutationRuleDoesNotExist
 #

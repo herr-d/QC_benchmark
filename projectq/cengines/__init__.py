@@ -33,4 +33,4 @@ from ._tagremover import TagRemover
 from ._testengine import CompareEngine, DummyEngine
 from ._twodmapper import GridMapper
 
-from ._permutation import PermuteBase, PermutePi4Front
+from ._permutation import PermuteBase, PermutePi4Front, PermuteCliffordBack

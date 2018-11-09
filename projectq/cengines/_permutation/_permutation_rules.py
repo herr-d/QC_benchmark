@@ -1,7 +1,7 @@
 import projectq.ops as gates
 import cmath
 from ._permutation_relations import PermutationRuleDoesNotExist
-from ._permutation_relations import _GATE_TO_INFO, _GATE_FROM_INFO, _COMM_REL
+from ._permutation_relations import _GATE_TO_INFO, _GATE_FROM_INFO, _COMM_REL, permute_cnot
 
 #
 # All gates get converted into an easier format using the get basis function.
@@ -52,12 +52,20 @@ class BasePermutationRules(object):
         Raises:
             Exception if no permutation rule is available.
 		"""
-		assert(len(left.data.control_qubits)==0)
-		assert(len(right.data.control_qubits)==0)
 
 		# debug
 		#print("permute: left: " + str(left.data.gate) +"  right: " + str(right.data.gate))
-
+		# Handle classical gates (Allocate, ...)
+		if(isinstance(left.data.gate, gates.ClassicalInstructionGate) or
+			isinstance(right.data.gate, gates.ClassicalInstructionGate)):
+			assert(len(right.data.qubits) == 1 and len(right.data.qubits)==1)
+			is_commuting = True
+			for qubit in right.data.qubits:
+				if(qubit in left.data.qubits):
+					is_commuting = False
+			if(is_commuting):
+				self.linked_list.swap_elements(left,right)
+			return
 
 		if(not type(left.data.gate) in _GATE_TO_INFO or not type(right.data.gate) in _GATE_TO_INFO):
 			raise PermutationRuleDoesNotExist("""This is not a valid gate for the 
@@ -71,9 +79,12 @@ class BasePermutationRules(object):
 
 		# cannot permute two pi/8 rotations
 		assert((not left_info[1] == "pi4") or (not right_info[1] == "pi4"))
-		
+		# dont allow permutation of two cnot gates
+		assert(not (len(left.data.control_qubits) != 0 and len(right.data.control_qubits) != 0))
+
 		# check for control
 		if(len(left.data.control_qubits) != 0 or len(right.data.control_qubits)!=0):
+			left_info[1] = "CNOT"
 			self._permute_control_gates(left.data, right.data, left_info, right_info)
 			self.linked_list.swap_elements(left,right)
 			return
@@ -84,7 +95,7 @@ class BasePermutationRules(object):
 		return
 
 
-	def check_clifford(self, node):
+	def is_clifford(self, node):
 		"""
 		Used by permutation class to check if gates should be permuted
 		"""
@@ -150,18 +161,15 @@ class BasePermutationRules(object):
 		# relations folder
 
 		#
-		if left.control_qubits[0] in right.qubits[0]:
-			permute_control_rotation(left, left_info, right, right_info)
-		elif right.control_qubits[0] in left.qubits[0]:
-			permute_control_rotation(right, right_info, left, left_info)
 
-		# target
 		if(len(left.control_qubits) == 1):
-			permute_target_rotation(left, left_info, right, right_info)
-		
-		elif(len(right.control_qubits) == 1):
-			permute_target_rotation(right, right_info, left, left_info)
-		
+			permute_cnot(left, right, right_info)
+			# generate new gate from right_info
+			right.gate = BasePermutationRules._generate_gate(right_info)
+		else:
+			permute_cnot(right, left, left_info)
+			# generate new gate from left_info
+			left.gate = BasePermutationRules._generate_gate(left_info)
 		return
 
 

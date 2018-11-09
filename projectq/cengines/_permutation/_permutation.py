@@ -1,6 +1,6 @@
 
 from projectq.cengines import BasicEngine
-from projectq.ops import FlushGate, FastForwardingGate, NotMergeable, AllocateQubitGate
+from projectq.ops import ClassicalInstructionGate, FlushGate, FastForwardingGate, NotMergeable, MeasureGate, AllocateQubitGate, AllocateDirtyQubitGate
 from projectq.cengines._permutation._linkedlist import DoubleLinkedList
 from projectq.cengines._permutation._permutation_rules import BasePermutationRules
 
@@ -77,14 +77,40 @@ class PermutePi4Front(PermuteBase):
 
 
     def _gate_of_interest(self, node):
-        if(self._perm.check_clifford(node)):
+        if(isinstance(node.data.gate, ClassicalInstructionGate) and not isinstance(node.data.gate, FastForwardingGate)):
+            return True
+        if(self._perm.is_clifford(node)):
             return False
         return True
 
 
     def _permutation_required(self, left):
-        if (left == None or isinstance(left.data.gate,AllocateQubitGate)):
+        if (left == None or isinstance(left.data.gate,AllocateQubitGate) or isinstance(left.data.gate, AllocateDirtyQubitGate)):
             return False
-        if(self._gate_of_interest(left)):
+        return self._perm.is_clifford(left)
+
+class PermuteCliffordBack(PermuteBase):
+    def __init__(self):
+        super(PermuteCliffordBack, self).__init__(BasePermutationRules)
+
+
+    def permute(self):
+        for node in reversed(self._dllist):
+            if(self._gate_of_interest(node) and not isinstance(node.data.gate,ClassicalInstructionGate)):
+                while(self._permutation_required(node.next)):
+                    self._perm.permute(node, node.next)
+        return
+
+
+    def _gate_of_interest(self, node):
+        if(self._perm.is_clifford(node)):
+            return True
+        return False
+
+
+    def _permutation_required(self, right):
+        if (right == None or isinstance(right.data.gate, FastForwardingGate)):
+            return False
+        if(self._gate_of_interest(right)):
             return False
         return True

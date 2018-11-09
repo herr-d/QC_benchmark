@@ -1,41 +1,53 @@
+from projectq.ops._qubit_operator import _PAULI_OPERATOR_PRODUCTS
+import cmath
 
+_PRECISION = 10**-5
 
+def permute_cnot(control_gate, rotation, rotation_info):
+	contributions=[]
+	for basis_element in rotation_info[0]:
+		# does it anti-commute with control?
+		if(rotation.qubits[0][basis_element[0]] in control_gate.control_qubits):
+			if(basis_element[1] != "Z"):
+				# add X contribution to target
+				for qubit in control_gate.qubits[0]:
+					contributions.append((qubit, "X"))
 
+		# does it anti-commute with the target?
+		if(rotation.qubits[0][basis_element[0]] in control_gate.qubits[0]):
+			if(basis_element[1] != "X"):
+				for qubit in control_gate.control_qubits:
+					contributions.append((qubit, "Z"))
 
-def permute_control_rotation(control_gate, control_info, rotation, rotation_info):
-	r_pos = rotation.qubits.index(control.control_qubits[0])
-	# check commutation relation of basis
-	if("Z" != rotation_info[0][r_pos][1]): # they anticommute and targets need to be added
-		for i in control_info[0]:
-			assert((not control.qubits[i[0]] in rotation.qubits))
-			rotation_info[0].append((len(rotation.qubits),i[1]))
-			rotation.qubits.append(control.qubits[i[0]])
+	# update the basis contributions
+	_add_basis_contribution(rotation, rotation_info, contributions)
 	return
-
-def permute_target_rotation(control_gate, control_info, rotation, rotation_info):
-	# first check that controlled gate is pauli
-	assert(control_info[1] == "pi")
-	if(_calc_parity(control_gate, control_info, rotation, rotation_info) == -1):
-		# add control to rotation
-		rotation_info[0].append((len(rotation.qubits),"Z"))
-		rotation.qubits.append(control.control_qubits[0])
-	# otherwise gates commute
-	return
-
 
 # Helper functions
 
-def _calc_parity(left, left_info, right, right_info):
-	parity = 1
-	for l in left_info:
-		try:
-			pos = right.qubits.index(left.qubits[l[0]])
-		except:
-			continue
-		# now check if different basis
-		for r in right_info:
-			if(r[0] == pos and r[1] != l[1]):
-				parity *= -1
-			else:
-				break
-	return parity
+def _add_basis_contribution(rotation, rotation_info, contributions):
+	# first check if qubit is already in multi qubit rotation gate
+	total_factor = 1
+	for contrib in contributions:
+		if (contrib[0] in rotation.qubits[0]):
+			pos = rotation.qubits[0].index(contrib[0])
+		else:
+			pos = len(rotation.qubits[0])
+			rotation.qubits[0].append(contrib[0])
+
+		# pos is now defined and points to the qubit that needs to be modified
+		modified = False
+		for i in range(len(rotation_info[0])):
+			if(rotation_info[0][i][0] == pos):
+				modified = True
+				f, b = _PAULI_OPERATOR_PRODUCTS[(rotation_info[0][i][1], contrib[1])]
+				rotation_info[0][i] = (rotation_info[0][i][0], b)
+				total_factor *= f
+		if(not modified):
+			rotation_info[0].append((pos,contrib[1]))
+	if(abs(total_factor + 1)< _PRECISION):
+		rotation_info[2] = 4*cmath.pi - rotation_info[2]
+		return
+	elif(abs(total_factor - 1) < _PRECISION):
+		return
+	raise("Total factor is imaginary! This is not unitary!")
