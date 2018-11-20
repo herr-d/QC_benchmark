@@ -2,7 +2,7 @@ from projectq.setups import restrictedgateset
 from projectq.setups.decompositions import cnot2rotations
 from projectq.ops import (CNOT, BasicRotationGate, HGate, XGate, YGate,
 						ZGate, TGate, SGate, TimeEvolution, QubitOperator)
-from projectq.cengines import (PermutePi4Front)
+from projectq.cengines import PermutePi4Front, MultiqubitMeasurementCliffordEngine
 
 
 def get_engine_list():
@@ -11,7 +11,7 @@ def get_engine_list():
                     two_qubit_gates=(CNOT,),
                     other_gates=(TimeEvolution,))
 
-	engines = engines + [PermutePi4Front()]
+	engines = engines + [PermutePi4Front(),MultiqubitMeasurementCliffordEngine()]
 	return engines
 
 
