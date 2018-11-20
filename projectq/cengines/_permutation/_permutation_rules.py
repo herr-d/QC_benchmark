@@ -95,12 +95,12 @@ class BasePermutationRules(object):
 		return
 
 
-	def is_clifford(self, node):
+	def is_clifford(gate):
 		"""
 		Used by permutation class to check if gates should be permuted
 		"""
-		if(type(node.data.gate) in _GATE_TO_INFO):
-			info = _GATE_TO_INFO[type(node.data.gate)](node.data.gate)
+		if(type(gate) in _GATE_TO_INFO):
+			info = _GATE_TO_INFO[type(gate)](gate)
 			if(info[1]=="pi4"):
 				return False
 		return True

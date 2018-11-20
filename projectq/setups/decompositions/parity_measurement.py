@@ -15,33 +15,37 @@
 """
 Registers a decomposition rule for Parity Measurements.
 """
-
+from projectq.types import Qureg
 from projectq.cengines import DecompositionRule
-from projectq.ops import ParityMeasurementGate
+from projectq.meta import Control
+from projectq.ops import ParityMeasurementGate, CNOT, S, X, H, get_inverse, Measure
 
 
 def _decompose_parity_measurement(cmd):
-	ancilla = cmd.engine.allocate_qubit()
-	for pos, action in cmd.gate._bases:
-
-    	if action == "X":
-            H | qubits[0][pos]
-            CNOT | qubits[0][pos], ancilla
-            H | qubits[0][pos]
+    ancilla = cmd.engine.allocate_qubit()
+    for pos, action in cmd.gate._bases:
+        qureg = Qureg([cmd.qubits[0][pos]])
+        if action == "X":
+            H | cmd.qubits[0][pos]
+            with Control(cmd.engine, qureg):
+                X | ancilla
+            H | cmd.qubits[0][pos]
 
         elif action == "Y":
-            H | qubits[0][pos]
-            S | qubits[0][pos]
-            CNOT | qubits[0][pos], ancilla
-            dagger(S) | qubits[0][pos]
-            H | qubits[0][pos]
-
+            H | cmd.qubits[0][pos]
+            S | cmd.qubits[0][pos]
+            with Control(cmd.engine, qureg):
+                X | ancilla
+            get_inverse(S) | cmd.qubits[0][pos]
+            H | cmd.qubits[0][pos]
         elif action == "Z":
-            CNOT | qubits[0][pos], ancilla
+            with Control(cmd.engine, qureg):
+              X | ancilla
+
 
     # if there is a minus sign
-    if(cmd.gate.inverted):
-    	X | ancilla
+    if(cmd.gate._is_inverted):
+        X | ancilla
 
     # at last measure the parity:
     Measure | ancilla
@@ -53,5 +57,5 @@ def _recognize_paritymeasurement(cmd):
 
 #: Decomposition rules
 all_defined_decomposition_rules = [
-    DecompositionRule(ParityMeasurementGate, _decompose_barrier, _recognize_barrier)
+    DecompositionRule(ParityMeasurementGate, _decompose_parity_measurement, _recognize_paritymeasurement)
 ]

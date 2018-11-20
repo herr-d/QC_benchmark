@@ -34,3 +34,4 @@ from ._testengine import CompareEngine, DummyEngine
 from ._twodmapper import GridMapper
 
 from ._permutation import PermuteBase, PermutePi4Front, PermuteCliffordBack
+from ._clifford_simplification import MultiqubitMeasurementCliffordEngine

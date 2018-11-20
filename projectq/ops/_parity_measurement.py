@@ -1,36 +1,55 @@
-from ._gates import MeasurementGate
+from ._gates import MeasureGate, BasicGate
+from ._command import apply_command
 
 
-class ParityMeasurementGate(MeasurementGate):
-	def __init__(self, bases):
-		"""
-		
-		"""
-		self._bases = []
-		for el in term.split():
-			if len(el) < 2:
-				raise ValueError('term specified incorrectly.')
-				_bases.append((int(el[1:]), el[0]))
+class ParityMeasurementGate(MeasureGate):
+    def __init__(self, bases, is_inverted = False):
+        """
+        
+        """
+        super(MeasureGate, self).__init__()
+        self._bases = []
+        self._is_inverted = is_inverted
 
-		# Test that _bases has correct format of tuples
-		for local_operator in _bases:
-			qubit_num, action = local_operator
-			if not isinstance(action, str) or action not in 'XYZ':
-				raise ValueError("Invalid action provided: must be "
-					"string 'X', 'Y', or 'Z'.")
-				if not (isinstance(qubit_num, int) and qubit_num >= 0):
-					raise QubitOperatorError("Invalid qubit number "
-						"provided to QubitTerm: "
-						"must be a non-negative "
-						"int.")
-		# Sort and add to self.terms:
-		_bases.sort(key=lambda loc_operator: loc_operator[0])
-		return
+        if(isinstance(bases, str)):
+            for el in bases.split():
+                if len(el) < 2:
+                    raise ValueError('term specified incorrectly.')
+                self._bases.append((int(el[1:]), el[0]))
+        
+        elif(isinstance(bases, list)):
+            for el in bases:
+                assert(isinstance(el, tuple))
+                assert(isinstance(el[0], int))
+                assert(isinstance(el[1], str) and el[1] in ["X","Y","Z"])
+                self._bases.append(el)
 
-	def __or__(self, qubits):
-		"""
-		Only accepts a 
-		"""
+        # Test that _bases has correct format of tuples
+        for local_operator in self._bases:
+            qubit_num, action = local_operator
+            if not isinstance(action, str) or action not in 'XYZ':
+                raise ValueError("Invalid action provided: must be "
+                    "string 'X', 'Y', or 'Z'.")
+                if not (isinstance(qubit_num, int) and qubit_num >= 0):
+                    raise QubitOperatorError("Invalid qubit number "
+                        "provided to QubitTerm: "
+                        "must be a non-negative "
+                        "int.")
+
+        self._bases.sort(key=lambda loc_operator: loc_operator[0])
+        return
+
+    def __str__(self):
+        name = "Parity Measurement " 
+        for element in self._bases:
+            name += str(element[1]) + str(element[0]) + " "
+        return name
+
+
+    def __or__(self, qubits):
+        """
+        Only accepts a 
+        """
         qubits = self.make_tuple_of_qureg(qubits)
         if len(qubits) != 1:
             raise TypeError("Only one qubit or qureg allowed.")
@@ -38,22 +57,22 @@ class ParityMeasurementGate(MeasurementGate):
         # Check that Qureg has enough qubits:
         num_qubits = len(qubits[0])
         non_trivial_qubits = set()
-        for index, action in _bases:
+        for index, action in self._bases:
             non_trivial_qubits.add(index)
         if max(non_trivial_qubits) >= num_qubits:
             raise ValueError("QubitOperator acts on more qubits than the qureg "
                              "is applied to.")
         
         # Perform X,Y,Z measurement if ParityMeasurement acts only on one qubit
-        if len(_bases) == 1:
-            if _bases[0][1] == "X":
-            	H | qubits[0][_bases[0][0]]
-                Measure | qubits[0][_bases[0][0]]
-            elif _bases[0][1] == "Y":
-            	S*H | qubits[0][_bases[0][0]]
-                Measure | qubits[0][_bases[0][0]]
-            elif _bases[0][1] == "Z":
-                Measure | qubits[0][_bases[0][0]]
+        if len(self._bases) == 1:
+            if self._bases[0][1] == "X":
+                H | qubits[0][self._bases[0][0]]
+                Measure | qubits[0][self._bases[0][0]]
+            elif self._bases[0][1] == "Y":
+                S*H | qubits[0][self._bases[0][0]]
+                Measure | qubits[0][self._bases[0][0]]
+            elif self._bases[0][1] == "Z":
+                Measure | qubits[0][self._bases[0][0]]
             return
 
         # Create new ParityMeasurement gate with rescaled qubit indices in
@@ -62,10 +81,9 @@ class ParityMeasurementGate(MeasurementGate):
         non_trivial_qubits = sorted(list(non_trivial_qubits))
         for i in range(len(non_trivial_qubits)):
             new_index[non_trivial_qubits[i]] = i
-        new_paritymeasurement = ParityMeasurementGate()
-        new_bases = [tuple(new_index[index], action) for index, action in _bases]
+        new_bases = [(new_index[index], action) for index, action in self._bases]
         new_qubits = [qubits[0][i] for i in non_trivial_qubits]
+        new_paritymeasurement = ParityMeasurementGate(new_bases, self._is_inverted)
         # Apply new gate
-        cmd = new_qubitoperator.generate_command(new_qubits)
+        cmd = new_paritymeasurement.generate_command(new_qubits)
         apply_command(cmd)
-		pass

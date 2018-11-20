@@ -15,11 +15,8 @@ class PermuteBase(BasicEngine):
     """
     def __init__(self, permutation_rule):
         """
-        Initialize a LocalOptimizer object.
-
-        Args:
-            m (int): Number of gates to cache per qubit, before sending on the
-                first gate.
+        Initialize the Permutation Base Engine.
+        To use the permutation engine please use a derived class.
         """
         BasicEngine.__init__(self)
         self._dllist = DoubleLinkedList()  # dict of lists containing operations for each qubit
@@ -38,7 +35,7 @@ class PermuteBase(BasicEngine):
     def _permute(self):
         """
         This function needs to be overwritten by the derived class.
-        And should perform the Permutation.
+        It should perform the Permutation.
         """
         return
 
@@ -79,7 +76,7 @@ class PermutePi4Front(PermuteBase):
     def _gate_of_interest(self, node):
         if(isinstance(node.data.gate, ClassicalInstructionGate) and not isinstance(node.data.gate, FastForwardingGate)):
             return True
-        if(self._perm.is_clifford(node)):
+        if(BasePermutationRules.is_clifford(node.data.gate)):
             return False
         return True
 
@@ -87,7 +84,9 @@ class PermutePi4Front(PermuteBase):
     def _permutation_required(self, left):
         if (left == None or isinstance(left.data.gate,AllocateQubitGate) or isinstance(left.data.gate, AllocateDirtyQubitGate)):
             return False
-        return self._perm.is_clifford(left)
+        return BasePermutationRules.is_clifford(left.data.gate)
+
+
 
 class PermuteCliffordBack(PermuteBase):
     def __init__(self):
@@ -103,7 +102,7 @@ class PermuteCliffordBack(PermuteBase):
 
 
     def _gate_of_interest(self, node):
-        if(self._perm.is_clifford(node)):
+        if(BasePermutationRules.is_clifford(node.data.gate)):
             return True
         return False
 
