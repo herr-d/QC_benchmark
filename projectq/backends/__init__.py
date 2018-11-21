@@ -30,3 +30,5 @@ from ._circuits import CircuitDrawer
 from ._sim import Simulator, ClassicalSimulator
 from ._resource import ResourceCounter
 from ._ibm import IBMBackend
+
+from ._SurfaceCodeCompiler import SimpleExporter, FastHeuristicLayout

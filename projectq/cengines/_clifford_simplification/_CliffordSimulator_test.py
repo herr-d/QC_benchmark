@@ -1,8 +1,8 @@
 import pytest
 import projectq
 import cmath
-from _CliffordSimulator import CliffordSimulator
-from _MainCliffordEngine import MultiqubitMeasurementCliffordEngine
+from projectq.cengines._clifford_simplification._CliffordSimulator import CliffordSimulator
+from projectq.cengines._clifford_simplification._MainCliffordEngine import MultiqubitMeasurementCliffordEngine
 
 
 
