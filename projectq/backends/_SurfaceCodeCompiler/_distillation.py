@@ -1,9 +1,4 @@
-import json
-from os import listdir
-from os.path import isfile, join
-
-FILENAMES = [name for name in listdir("distillations") if isfile(join("distillations", name))]
-
+from ._distillations import DIST_LIBRARY
 
 
 
@@ -23,11 +18,9 @@ class DistillationEngine(object):
         # TODO: add more distillation protocols
         # TODO: make the decision more intelligent and don't
         #       just pick the first suitable
-        for FILENAMES in self.library:
-            with open(filename) as fin:
-                dist_info = json.load(fin)
-                p_out = dist_info["reduction factor"] * p_phys ** dist_info["reduction exponent"]
-                if(p_out < max_error):
-                    self._protocol = dist_info
-                    return
+        for dist_info in DIST_LIBRARY:
+            p_out = dist_info["reduction factor"] * p_phys ** dist_info["reduction exponent"]
+            if(p_out < max_error):
+                self._protocol = dist_info
+                return
         raise DistillationLibraryError("No suitable distillation protocol found")

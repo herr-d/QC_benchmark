@@ -33,5 +33,6 @@ from ._tagremover import TagRemover
 from ._testengine import CompareEngine, DummyEngine
 from ._twodmapper import GridMapper
 
+from ._basisrotation import BasisRotation
 from ._permutation import PermuteBase, PermutePi4Front, PermuteCliffordBack
 from ._clifford_simplification import MultiqubitMeasurementCliffordEngine
