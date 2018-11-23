@@ -39,11 +39,17 @@ class MultiqubitMeasurementCliffordEngine(CliffordEngine):
         for cmd in command_list:
             if (isinstance(cmd.gate, gates.FlushGate)): # flush gate --> returns the current stabilizers as parity measurements
                 self.perform_simulation()
+                # reset the simulator
+                self._gates = []
+                self._simulator = CliffordSimulator()
                 self.send([cmd])
+                
             elif (isinstance(cmd.gate, gates.AllocateQubitGate)):
                 self.send([cmd]) # send gate along
             elif (isinstance(cmd.gate, gates.MeasureGate)):
                 self._simulator.add_stabilizer([(cmd.qubits[0],"Z")])
+            elif (isinstance(cmd.gate, gates.ClassicalInstructionGate)):
+                return
             elif (BasePermutationRules.is_clifford(cmd.gate)):
                 self._gates.append(cmd)
             elif (len(self._gates) == 0):

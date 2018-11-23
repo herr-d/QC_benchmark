@@ -84,13 +84,17 @@ class SurfaceCode_Base(BasicEngine):
             elif (isinstance(cmd.gate, gates.ParityMeasurementGate)):
                 self._command_buffer.append(cmd)
             elif (isinstance(cmd.gate, gates.ClassicalInstructionGate)):
-                continue
+                pass
             elif(_GATE_TO_INFO[type(cmd.gate)](cmd.gate)[1] == "pi4"):
                 self._Tgate_count += 1
                 self._command_buffer.append(cmd)
             else:
                 raise TypeError("Non supported gate for the surface"
                     "layouting received: " + str(cmd.gate))
+
+            #if it is not the last engine
+            if(not self.is_last_engine):
+                self.send([cmd])
         return
 
 
@@ -101,10 +105,10 @@ class FastHeuristicLayout(SurfaceCode_Base):
     See arXiv:1808.02892v2 for the details.
     """
     def __init__(self):
-        SurfaceCode_Base.__init__()
+        SurfaceCode_Base.__init__(self)
 
 
-    def generate_layout():
+    def generate_layout(self):
         # Determine the fidelity of Magic states
         #required_p_err()
 

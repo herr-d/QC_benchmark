@@ -23,6 +23,3 @@ def SimpleExporterEngineList():
 
 	engines = engines + [PermutePi4Front(),MultiqubitMeasurementCliffordEngine(), BasisRotation(), LocalOptimizer()]
 	return engines
-
-
-

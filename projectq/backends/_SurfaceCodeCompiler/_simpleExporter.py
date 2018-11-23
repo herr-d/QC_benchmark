@@ -68,7 +68,6 @@ class SimpleExporter(SurfaceCode_Base):
             fout.write("INIT " + str(self._logical_qubit_count) + "\n")
             # perform gates
             for cmd in self._command_buffer:
-                print(cmd)
                 if (isinstance(cmd.gate, gates.AllocateQubitGate)):
                     # already done in the beginning
                     continue

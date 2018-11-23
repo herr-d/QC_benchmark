@@ -33,7 +33,7 @@ class BasisRotation(BasicEngine):
         Handles the basis transformation for ParityMeasurementGates
         """
         self.rotation(cmd.gate._bases, cmd)
-        new_bases = tuple((basis[0],"Z") for basis in cmd.gate._bases)
+        new_bases = list((basis[0],"Z") for basis in cmd.gate._bases)
         new_cmd = gates.ParityMeasurementGate(new_bases).generate_command(cmd.qubits[0])
         self.send([new_cmd])
         self.dagger_rotation(cmd.gate._bases, cmd)
