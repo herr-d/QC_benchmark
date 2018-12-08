@@ -33,14 +33,14 @@ def generate_instructions():
 	ControlledGate(Z,2)	| (qreg[0], qreg[1], qreg[3])
 	ControlledGate(Z,3)	| (qreg[0], qreg[1], qreg[2], qreg[3])
 
-	#Tensor(H) | qreg
-	#Tensor(X) | qreg
+	Tensor(H) | qreg
+	Tensor(X) | qreg
 
 	# perform measurement
-	#ControlledGate(X,4) | (qreg, ancilla)
+	ControlledGate(X,4) | (qreg, ancilla)
 
 	Measure | ancilla
-	#Tensor(Measure) | qreg
+	Tensor(Measure) | qreg
 	eng.flush()
 	return
 
