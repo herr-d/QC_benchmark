@@ -162,7 +162,7 @@ def get_engine_list(one_qubit_gates="any",
             return True
         elif two_qubit_gates == "any" and len(all_qubits) == 2:
             return True
-        elif isinstance(cmd.gate, allowed_gate_classes):
+        elif isinstance(cmd.gate, allowed_gate_classes) and len(all_qubits) == 1:
             return True
         elif (cmd.gate, len(cmd.control_qubits)) in allowed_gate_instances:
             return True

@@ -77,8 +77,19 @@ class CliffordSimulator(object):
 		# first determine the gate
 		# CNOT
 		if (len(cmd.control_qubits) > 0):
-			assert(isinstance(cmd.gate, gates.XGate))
-			self.apply_rules(_CONTROLLED_GATE_, cmd.control_qubits + cmd.qubits[0])
+
+			if(isinstance(cmd.gate, gates.YGate)):
+				self.apply_rules(_ACTION[gates.SGate], cmd.qubits[0])
+				self.apply_rules(_CONTROLLED_GATE_, cmd.control_qubits + cmd.qubits[0])
+				self.apply_rules(_ACTION[gates.ZGate], cmd.qubits[0])
+				self.apply_rules(_ACTION[gates.SGate], cmd.qubits[0])
+			elif(isinstance(cmd.gate, gates.ZGate)):
+				self.apply_rules(_ACTION[gates.HGate], cmd.qubits[0])
+				self.apply_rules(_CONTROLLED_GATE_, cmd.control_qubits + cmd.qubits[0])
+				self.apply_rules(_ACTION[gates.HGate], cmd.qubits[0])
+			else:
+				assert(isinstance(cmd.gate, gates.XGate))
+				self.apply_rules(_CONTROLLED_GATE_, cmd.control_qubits + cmd.qubits[0])
 			return
 		if(isinstance(cmd.gate, gates.BasicRotationGate)):
 			if(self._get_sign_of_angle(cmd.gate)==1):

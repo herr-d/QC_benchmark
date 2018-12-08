@@ -115,7 +115,7 @@ _ROTATION_GATE_TO_INFO = {
 	gates.Rx: lambda gate: [[(0,"X")]] + determine_rotation(gate),
 	gates.Ry: lambda gate: [[(0,"Y")]] + determine_rotation(gate),
 	gates.Rz: lambda gate: [[(0,"Z")]] + determine_rotation(gate),
-	gates.TimeEvolution: lambda gate: time_evolution_info(gate)
+	gates.TimeEvolution: lambda gate: time_evolution_info(gate),
 }
 
 _ROTATION_GATE_FROM_INFO = {

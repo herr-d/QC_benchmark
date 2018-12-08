@@ -53,6 +53,8 @@ class BasePermutationRules(object):
             Exception if no permutation rule is available.
 		"""
 
+		left_daggered = False
+		right_daggered = False
 		# debug
 		#print("permute: left: " + str(left.data.gate) +"  right: " + str(right.data.gate))
 		# Handle classical gates (Allocate, ...)
@@ -67,6 +69,15 @@ class BasePermutationRules(object):
 				self.linked_list.swap_elements(left,right)
 			return
 
+		if (isinstance(left.data.gate, gates.DaggeredGate)):
+			left.data.gate = left.data.gate._gate
+			left_daggered = True
+
+		if (isinstance(right.data.gate, gates.DaggeredGate)):
+			right.data.gate = right.data.gate._gate
+			right_daggered = True
+
+
 		if(not type(left.data.gate) in _GATE_TO_INFO or not type(right.data.gate) in _GATE_TO_INFO):
 			raise PermutationRuleDoesNotExist("""This is not a valid gate for the 
 			permutation rules. Allowed gatesets are currently: Pauli-rotations
@@ -76,6 +87,11 @@ class BasePermutationRules(object):
 		left_info = _GATE_TO_INFO[type(left.data.gate)](left.data.gate)
 		right_info = _GATE_TO_INFO[type(right.data.gate)](right.data.gate)
 
+		if left_daggered:
+			left_info[-1] = 4*cmath.pi - left_info[-1]
+		if right_daggered:
+			right_info[-1] = 4*cmath.pi - right_info[-1]
+		del left_daggered, right_daggered
 
 		# cannot permute two pi/8 rotations
 		assert((not left_info[1] == "pi4") or (not right_info[1] == "pi4"))
@@ -99,6 +115,8 @@ class BasePermutationRules(object):
 		"""
 		Used by permutation class to check if gates should be permuted
 		"""
+		if(isinstance(gate, gates.DaggeredGate)):
+			gate = gate._gate
 		if(type(gate) in _GATE_TO_INFO):
 			info = _GATE_TO_INFO[type(gate)](gate)
 			if(info[1]=="pi4"):
@@ -206,8 +224,10 @@ class BasePermutationRules(object):
 			if(gate[0][0][1] in _GATE_FROM_INFO):
 				return _GATE_FROM_INFO[gate[0][0][1]](gate[2])
 		else: # multiqubit gate
+			# check for identities
+			new_info = tuple((i for i in gate[0] if not i[1] == "I" ))
 			# TimeEvolution operators have a different prefactor
 			# from rotations thus the division by -2
-			return gates.TimeEvolution(-gate[2]/2., gates.QubitOperator(tuple(gate[0])))
+			return gates.TimeEvolution(-gate[2]/2., gates.QubitOperator(new_info))
 		raise PermutationRuleDoesNotExist("""Cannot create rotation gate from the
 			provided information.""")

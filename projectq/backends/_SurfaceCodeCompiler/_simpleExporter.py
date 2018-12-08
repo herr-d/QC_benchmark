@@ -36,6 +36,11 @@ class SimpleExporter(SurfaceCode_Base):
                 self._command_buffer.append(cmd)
             elif (isinstance(cmd.gate, gates.ClassicalInstructionGate)):
                 continue
+
+            elif(_GATE_TO_INFO[type(cmd.gate)](cmd.gate)[1] == "pi4"):
+                self._Tgate_count += 1
+                self._command_buffer.append(cmd)
+
             elif(_GATE_TO_INFO[type(cmd.gate)](cmd.gate)[1] == "pi4"):
                 self._Tgate_count += 1
                 self._command_buffer.append(cmd)
