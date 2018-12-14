@@ -44,6 +44,7 @@ class MultiqubitMeasurementCliffordEngine(CliffordEngine):
                 self._simulator = CliffordSimulator()
                 self.send([cmd])
             elif (isinstance(cmd.gate, gates.AllocateQubitGate)):
+                self._simulator.add_qubit_to_dict(cmd.qubits[0])
                 self.send([cmd]) # send gate along
             elif (isinstance(cmd.gate, gates.MeasureGate)):
                 self._simulator.add_stabilizer([(cmd.qubits[0],"Z")])

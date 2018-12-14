@@ -56,7 +56,7 @@ class BasePermutationRules(object):
 		left_daggered = False
 		right_daggered = False
 		# debug
-		#print("permute: left: " + str(left.data.gate) +"  right: " + str(right.data.gate))
+		#print("permute: left: " + str(left.data) +"  right: " + str(right.data))
 		# Handle classical gates (Allocate, ...)
 		if(isinstance(left.data.gate, gates.ClassicalInstructionGate) or
 			isinstance(right.data.gate, gates.ClassicalInstructionGate)):

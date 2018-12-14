@@ -81,7 +81,10 @@ class SimpleExporter(SurfaceCode_Base):
                     for basis in cmd.gate._bases:
                         qubits += " " + str(self._remap[cmd.qubits[0][basis[0]].id])
                     self._basis_trafo([cmd.gate._bases], cmd, fout)
-                    fout.write("MZZ" + qubits + "\n")
+                    if(len(cmd.gate._bases) == 1):
+                        fout.write("MZ" + qubits + "\n")
+                    else:
+                        fout.write("MZZ" + qubits + "\n")
                     continue
                 elif (isinstance(cmd.gate, gates.HGate)):
                     fout.write("H " + str(self._remap[cmd.qubits[0][0].id])+"\n")

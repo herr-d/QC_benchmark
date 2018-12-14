@@ -22,5 +22,5 @@ def SimpleExporterEngineList():
                 two_qubit_gates=(gates.CNOT,),
                 other_gates=())
 
-	engines = engines + [CommandPrinter(), PermutePi4Front(),MultiqubitMeasurementCliffordEngine(), BasisRotation()]
+	engines = engines + [PermutePi4Front(), MultiqubitMeasurementCliffordEngine(), BasisRotation()]
 	return engines

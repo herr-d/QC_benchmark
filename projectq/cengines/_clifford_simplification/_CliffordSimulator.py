@@ -64,9 +64,13 @@ class CliffordSimulator(object):
 		# it passed all the checks? -> add it to the stabilizers
 		self._stabilizers.append((dict(),1))
 		for qubit, basis in stabilizer_list:
-			if not qubit[0].id in self._qubit_dict:
-				self._qubit_dict[qubit[0].id] = qubit
+			self.add_qubit_to_dict(qubit)
 			self._stabilizers[-1][0][qubit[0].id] = basis
+
+
+	def add_qubit_to_dict(self, qubit):
+		if not qubit[0].id in self._qubit_dict:
+			self._qubit_dict[qubit[0].id] = qubit
 
 
 	def apply_operation(self, cmd):
